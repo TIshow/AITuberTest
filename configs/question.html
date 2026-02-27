@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>AIに質問する</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif;
+      background: #0f0f1a;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      text-align: center;
+      color: #888;
+      margin-bottom: 32px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      background: #1e1e2e;
+      border: 1px solid #333;
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 16px;
+      padding: 16px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    textarea:focus {
+      border-color: #6c63ff;
+    }
+
+    textarea::placeholder {
+      color: #555;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 12px;
+      color: #555;
+      margin-top: 6px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      background: #6c63ff;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-family: inherit;
+    }
+
+    button:active {
+      background: #5a52e0;
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: center;
+      display: none;
+    }
+
+    .result.success {
+      background: #1a2e1a;
+      border: 1px solid #2d5a2d;
+      color: #6fcf6f;
+      display: block;
+    }
+
+    .result.error {
+      background: #2e1a1a;
+      border: 1px solid #5a2d2d;
+      color: #cf6f6f;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎤 AIに質問する</h1>
+    <p class="subtitle">質問を送ると、AIが講演中に回答します</p>
+
+    <textarea
+      id="question"
+      placeholder="例：AI時代に子どもたちが本当に学ぶべきことは何ですか？"
+      maxlength="150"
+    ></textarea>
+    <div class="char-count"><span id="count">0</span> / 150</div>
+
+    <button id="submitBtn" onclick="sendQuestion()" disabled>送信する</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    const textarea = document.getElementById('question')
+    const countEl = document.getElementById('count')
+    const submitBtn = document.getElementById('submitBtn')
+    const resultEl = document.getElementById('result')
+
+    textarea.addEventListener('input', () => {
+      const len = textarea.value.length
+      countEl.textContent = len
+      submitBtn.disabled = len === 0
+    })
+
+    async function sendQuestion() {
+      const question = textarea.value.trim()
+      if (!question) return
+
+      submitBtn.disabled = true
+      submitBtn.textContent = '送信中...'
+      resultEl.className = 'result'
+
+      try {
+        const res = await fetch('/api/messages?clientId=JMClecture2026&type=user_input', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [question],
+            useCurrentSystemPrompt: true,
+          }),
+        })
+
+        if (res.ok) {
+          resultEl.className = 'result success'
+          resultEl.textContent = '✅ 送信しました！AIが回答します'
+          textarea.value = ''
+          countEl.textContent = '0'
+        } else {
+          throw new Error('Server error')
+        }
+      } catch {
+        resultEl.className = 'result error'
+        resultEl.textContent = '❌ 送信に失敗しました。再度お試しください'
+      } finally {
+        submitBtn.disabled = false
+        submitBtn.textContent = '送信する'
+      }
+    }
+  </script>
+</body>
+</html>

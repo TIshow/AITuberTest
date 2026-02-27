@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+
+# 機密情報を含む可能性のある設定ファイル
+# APIキーを記入した場合はコミットしないこと
+# configs/aituberkit.env

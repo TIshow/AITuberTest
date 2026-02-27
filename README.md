@@ -31,6 +31,14 @@ cd aituberkit
 pnpm install
 ```
 
+### 2.5. 聴衆向け質問フォームを配置
+
+```bash
+cp configs/question.html aituberkit/public/question.html
+```
+
+> このファイルはサブモジュール内で未追跡のまま置くだけでよい（git push に影響しない）
+
 ### 3. 環境変数を設定
 
 ```bash
